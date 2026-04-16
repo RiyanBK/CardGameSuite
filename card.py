@@ -1,4 +1,4 @@
-from cmu_graphics import *
+# from cmu_graphics import *
 import random
 
 class Card:
@@ -64,9 +64,11 @@ class Deck:
             if card is not None:
                 hand.addCard(card)
 
+    # rebuilds the deck
     def reset(self):
         self.buildDeck()
 
+    # gets the number of cards left in the deck
     def getCardsLeft(self):
         return len(self.cards)
 
