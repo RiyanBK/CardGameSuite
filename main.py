@@ -24,13 +24,13 @@ def onAppStart(app):
 
 def handleMenuButtons(app, button):
     if button.label == 'WAR':
-        app.warGame = WarGame()
+        app.warGame = War()
         app.screenMode = 'war'
     elif button.label == 'BLACKJACK':
-        app.blackjackGame = BlackjackGame()
+        app.blackjackGame = Blackjack()
         app.screenMode = 'blackjack'
     elif button.label == 'GO FISH':
-        app.goFishGame = GoFishGame()
+        app.goFishGame = GoFish()
         app.screenMode = 'gofish'
 
 def redrawAll(app):
