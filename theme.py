@@ -5,41 +5,6 @@ from cmu_graphics import *
 # ============================================================
 # SHARED BACKGROUND - call this in every screen's draw function
 # ============================================================
-'''def drawPokerTableBackground(app):
-    # Dark wood border (outer frame)
-    drawRect(0, 0, app.width, app.height, fill=rgb(45, 28, 16))
-    
-    # Wood grain effect - horizontal lines across the border
-    for i in range(0, app.height, 8):
-        shade = 35 + (i % 3) * 5  # subtle variation
-        drawLine(0, i, app.width, i, 
-                 fill=rgb(shade + 10, shade, shade - 10), opacity=30)
-    
-    # Green felt table (main play area) - inset from edges
-    drawRect(40, 40, app.width - 80, app.height - 80, 
-             fill=rgb(30, 100, 50), border=rgb(60, 40, 20), 
-             borderWidth=6)
-    
-    # Felt texture - tiny pixel dots scattered across the green
-    # Using a grid pattern for 8-bit feel
-    for x in range(48, app.width - 48, 12):
-        for y in range(48, app.height - 48, 12):
-            # Alternate slightly different greens for texture
-            if (x + y) % 24 == 0:
-                drawRect(x, y, 4, 4, fill=rgb(35, 110, 55), opacity=40)
-            elif (x * y) % 36 == 0:
-                drawRect(x, y, 4, 4, fill=rgb(25, 90, 45), opacity=40)
-    
-    # Inner gold trim line (like a card table rail)
-    drawRect(52, 52, app.width - 104, app.height - 104, 
-             fill=None, border=rgb(180, 140, 60), borderWidth=2)
-    
-    # Corner decorations - pixelated diamond shapes
-    corners = [(60, 60), (app.width - 68, 60), 
-               (60, app.height - 68), (app.width - 68, app.height - 68)]
-    for cx, cy in corners:
-        drawPixelDiamond(cx, cy, rgb(180, 140, 60))'''
-
 def drawPokerTableBackground(app):
     # Dark wood border
     drawRect(0, 0, app.width, app.height, fill=rgb(45, 28, 16))
@@ -120,17 +85,9 @@ def drawMenuScreen(app):
                   rgb(200, 200, 180), scale=1)
     
     # Decorative chip icons next to subtitle
-    drawPixelChip(220, 188, rgb(200, 50, 50))
-    drawPixelChip(548, 188, rgb(50, 50, 200))
-    
-    # Game selection buttons
-    drawMenuButton(app, app.width / 2, 290, 'WAR', 
-                   rgb(180, 50, 50), rgb(220, 80, 80), 0)
-    drawMenuButton(app, app.width / 2, 370, 'BLACKJACK', 
-                   rgb(50, 50, 180), rgb(80, 80, 220), 1)
-    drawMenuButton(app, app.width / 2, 450, 'GO FISH', 
-                   rgb(50, 150, 80), rgb(80, 180, 110), 2)
-    
+    drawPixelChip(app.width/2 - 180, 188, rgb(200, 50, 50))
+    drawPixelChip(app.width/2 + 168, 188, rgb(50, 50, 200))
+
     # Decorative cards scattered around the title
     drawMiniCard(135, 115, 'heart')
     drawMiniCard(165, 115, 'spade')
@@ -142,42 +99,13 @@ def drawMenuScreen(app):
                   rgb(150, 150, 130), scale=0.8)
     
     # Decorative bottom cards
+    # Bottom left
     drawMiniCard(80, 480, 'club')
     drawMiniCard(110, 490, 'heart')
-    drawMiniCard(695, 480, 'spade')
-    drawMiniCard(665, 490, 'diamond')
 
-
-def drawMenuButton(app, cx, cy, label, darkColor, lightColor, index):
-    w, h = 260, 56
-    x = cx - w / 2
-    y = cy - h / 2
-    
-    # Button shadow (8-bit drop shadow)
-    drawRect(x + 4, y + 4, w, h, fill=rgb(0, 0, 0), opacity=40)
-    
-    # Button body
-    drawRect(x, y, w, h, fill=darkColor)
-    drawRect(x + 2, y + 2, w - 4, h - 4, fill=lightColor)
-    
-    # Pixel highlight on top edge
-    drawRect(x + 2, y + 2, w - 4, 4, fill='white', opacity=30)
-    
-    # Pixel border
-    drawRect(x, y, w, 2, fill=rgb(200, 160, 50))
-    drawRect(x, y + h - 2, w, 2, fill=rgb(200, 160, 50))
-    drawRect(x, y, 2, h, fill=rgb(200, 160, 50))
-    drawRect(x + w - 2, y, 2, h, fill=rgb(200, 160, 50))
-    
-    # Button text
-    drawPixelText(label, cx, cy, rgb(255, 240, 200), scale=1.4)
-    
-    # Small suit icon on each side of the button
-    suits = ['heart', 'spade', 'diamond']
-    suitColors = [rgb(255, 200, 200), rgb(200, 200, 255), rgb(200, 255, 200)]
-    drawRect(x + 12, cy - 4, 8, 8, fill=suitColors[index], opacity=60)
-    drawRect(x + w - 20, cy - 4, 8, 8, fill=suitColors[index], opacity=60)
-
+    # Bottom right (mirrored)
+    drawMiniCard(app.width - 132, 490, 'diamond')
+    drawMiniCard(app.width - 102, 480, 'spade')
 
 def drawPixelChip(x, y, color):
     # Simple 8-bit poker chip (circle made of squares)
@@ -186,27 +114,3 @@ def drawPixelChip(x, y, color):
     drawRect(x + 4, y + 12, 8, 4, fill=color)
     # Center dot
     drawRect(x + 6, y + 6, 4, 4, fill='white')
-
-
-# ============================================================
-# APP SETUP
-# ============================================================
-def onAppStart(app):
-    app.width = 800
-    app.height = 600
-    app.screenMode = 'menu'
-
-def redrawAll(app):
-    if app.screenMode == 'menu':
-        drawMenuScreen(app)
-
-def onMousePress(app, mouseX, mouseY):
-    pass
-
-def onKeyPress(app, key):
-    pass
-
-def main():
-    runApp()
-
-main()
