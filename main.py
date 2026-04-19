@@ -20,7 +20,7 @@ def onAppStart(app):
            rgb(50, 50, 180), rgb(80, 80, 220)),
         Button('GO FISH', app.width/2, 450, 260, 56, 
            rgb(50, 150, 80), rgb(80, 180, 110)),
-]
+    ]
 
 def handleMenuButtons(app, button):
     if button.label == 'WAR':
@@ -79,6 +79,9 @@ def drawMenu(app):
     drawMenuScreen(app)
     for button in app.menuButtons:
         button.render()
+
+    for i, card in enumerate(app.testCards):
+        card.render(250 + i * 70, 200)
 
 def drawRulesScreen(app):
     pass

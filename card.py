@@ -1,4 +1,4 @@
-# from cmu_graphics import *
+from cmu_graphics import *
 import random
 
 class Card:
@@ -21,7 +21,24 @@ class Card:
         self.faceUp = not self.faceUp
 
     def render(self, x, y):
-        pass
+        w, h = 60, 84
+        if self.faceUp:
+            drawRect(x, y, w, h, fill='white', border=rgb(60, 60, 60), borderWidth=1)
+            symbols = {'Hearts': '♥', 'Diamonds': '♦', 'Spades': '♠', 'Clubs': '♣'}
+            colors = {'Hearts': rgb(200, 50, 50), 'Diamonds': rgb(200, 50, 50), 
+                    'Spades': rgb(30, 30, 30), 'Clubs': rgb(30, 30, 30)}
+            color = colors[self.suit]
+            symbol = symbols[self.suit]
+            # Rank and small suit in top-left corner
+            drawLabel(self.name, x + w/2, y + 14, size=12, bold=True, 
+                    fill=color, font='monospace')
+            # Large suit symbol centered
+            drawLabel(symbol, x + w/2, y + h/2 + 6, size=28, fill=color, bold=True)
+        else:
+            drawRect(x, y, w, h, fill=rgb(180, 30, 30), border=rgb(60, 60, 60), borderWidth=1)
+            drawRect(x + 3, y + 3, w - 6, h - 6, fill=None, border='white', borderWidth=1)
+
+
     
 class Deck:
     # initializes new deck, with boolean shuffled default to true
