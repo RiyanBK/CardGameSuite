@@ -24,13 +24,13 @@ def onAppStart(app):
 
 def handleMenuButtons(app, button):
     if button.label == 'WAR':
-        app.warGame = War()
+        app.warGame = War(app)
         app.screenMode = 'war'
     elif button.label == 'BLACKJACK':
-        app.blackjackGame = Blackjack()
+        app.blackjackGame = Blackjack(app)
         app.screenMode = 'blackjack'
     elif button.label == 'GO FISH':
-        app.goFishGame = GoFish()
+        app.goFishGame = GoFish(app)
         app.screenMode = 'gofish'
 
 def redrawAll(app):
@@ -56,9 +56,19 @@ def onMouseRelease(app, mouseX, mouseY):
             if button.pressed and button.isClicked(mouseX, mouseY):
                 handleMenuButtons(app, button)
             button.pressed = False
+    elif app.screenMode == 'war':
+        app.warGame.handleRelease(app, mouseX, mouseY)
+    elif app.screenMode == 'blackjack':
+        app.blackjackGame.handleRelease(app, mouseX, mouseY)
+    elif app.screenMode == 'gofish':
+        app.goFishGame.handleRelease(app, mouseX, mouseY)
 
 def onKeyPress(app, key):
-    pass
+    if app.screenMode == 'menu':
+        if key == 'r':
+            app.screenMode = 'rules'
+    if app.screenMode == 'war':
+        app.warGame.handleKey(app, key)
 
 def onStep(app):
     pass
@@ -79,9 +89,6 @@ def drawMenu(app):
     drawMenuScreen(app)
     for button in app.menuButtons:
         button.render()
-
-    for i, card in enumerate(app.testCards):
-        card.render(250 + i * 70, 200)
 
 def drawRulesScreen(app):
     pass

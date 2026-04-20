@@ -4,7 +4,7 @@ from button import Button
 from card import *
 
 class Blackjack:
-    def __init__(self):
+    def __init__(self, app):
         self.deck = Deck(numDecks=6)
         self.playerHand = Hand()
         self.dealerHand = Hand()

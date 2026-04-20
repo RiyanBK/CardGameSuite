@@ -38,6 +38,11 @@ class Card:
             drawRect(x, y, w, h, fill=rgb(180, 30, 30), border=rgb(60, 60, 60), borderWidth=1)
             drawRect(x + 3, y + 3, w - 6, h - 6, fill=None, border='white', borderWidth=1)
 
+    def getValue(self):
+        return self.name
+    
+    def getSuit(self):
+        return self.suit
 
     
 class Deck:
@@ -103,6 +108,15 @@ class Hand:
     def addCard(self, card):
         self.cards.append(card)
 
+    # adds a card to the bottom of the hand (index 0), so removeTopCard won't
+    # draw it again until all other cards have been played through
+    def addCardToBottom(self, card):
+        self.cards.insert(0, card)
+
+    # adds a given list of Cards to the hand
+    def addCards(self, cards):
+        self.cards.extend(cards)
+
     # removes a specific Card from the hand
     def removeCard(self, card):
         self.cards.remove(card)
@@ -114,6 +128,12 @@ class Hand:
     # returns the number of cards in the hand
     def getCount(self):
         return len(self.cards)
+    
+    def getTopCard(self):
+        return self.cards[-1]
+    
+    def removeTopCard(self):
+        return self.cards.pop()
     
     # renders the card on the screen at a given position
     def render(self, x, y):
