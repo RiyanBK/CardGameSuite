@@ -59,14 +59,14 @@ class Blackjack:
 
         # shared table chrome — always visible except on player select screen
         if self.gamePhase != 'playerSelect':
-            drawPixelText('DEALER', cx, app.height * 0.08, rgb(180, 140, 60), scale=1.2)
-            drawRect(cx - app.width * 0.25, app.height * 0.13, app.width * 0.5, 2, fill=rgb(180, 140, 60))
+            drawPixelText('DEALER', cx, app.height * 0.10, rgb(180, 140, 60), scale=1.2)
+            drawRect(cx - app.width * 0.25, app.height * 0.15, app.width * 0.5, 2, fill=rgb(180, 140, 60))
             # dealer hand value — show once all cards are face up
             dealerCards = self.dealerHand.getCards()
             if dealerCards and all(c.faceUp for c in dealerCards):
                 dealerVal = self.getHandValue(self.dealerHand)
                 valColor = rgb(255, 80, 80) if dealerVal > 21 else rgb(255, 230, 150)
-                drawPixelText(str(dealerVal), cx, app.height * 0.11, valColor, scale=0.9)
+                drawPixelText(str(dealerVal), cx, app.height * 0.13, valColor, scale=0.9)
             drawPixelText('BLACKJACK PAYS 3 TO 2', cx, app.height * 0.38,
                           rgb(180, 50, 50), scale=0.8)
             drawPixelText('Dealer stands on 17', cx, app.height * 0.42,
@@ -233,7 +233,7 @@ class Blackjack:
         step = 68
         startX = app.width / 2 - (len(cards) * step) / 2
         for i, card in enumerate(cards):
-            card.render(startX + i * step, 80)
+            card.render(startX + i * step, 130)
 
     def getHandValue(self, hand):
         value = 0
@@ -266,6 +266,10 @@ class Blackjack:
 
     def handleRelease(self, app, mouseX, mouseY):
         self._releaseAllButtons()
+        if self.buttons[3].isClicked(mouseX, mouseY):
+            self.resetGame()
+            app.screenMode = 'menu'
+            return
         if self.gamePhase == 'playerSelect':
             for i, button in enumerate(self.playerSelectButtons):
                 if button.isClicked(mouseX, mouseY):
@@ -299,12 +303,7 @@ class Blackjack:
 
         elif self.gamePhase == 'playing':
             player = self.players[self.activePlayerIndex]
-            hit, stand, double, menu = self.buttons
-
-            if menu.isClicked(mouseX, mouseY):
-                self.resetGame()
-                app.screenMode = 'menu'
-                return
+            hit, stand, double, _ = self.buttons
 
             if hit.isClicked(mouseX, mouseY):
                 card = self.deck.draw()
@@ -352,26 +351,17 @@ class Blackjack:
                 app.screenMode = 'menu'
 
     def skipInitialBlackjacks(self):
-        # after the deal, auto-advance past any player who has a natural blackjack
-        while self.activePlayerIndex < self.numPlayers:
-            player = self.players[self.activePlayerIndex]
-            if player.sittingOut:
-                break
-            hand = player.currentHand()
-            if hand.getCount() == 2 and self.getHandValue(hand) == 21:
-                nextIdx = self.nextActivePlayerIndex(self.activePlayerIndex)
-                if nextIdx != -1:
-                    self.activePlayerIndex = nextIdx
-                else:
-                    self.runDealerTurn()
-                    return
-            else:
-                break
+        firstIdx = next((i for i, p in enumerate(self.players)
+                         if not p.sittingOut and not p.hasBlackjack()), -1)
+        if firstIdx == -1:
+            self.runDealerTurn()
+        else:
+            self.activePlayerIndex = firstIdx
 
     def nextActivePlayerIndex(self, fromIdx):
         # returns index of next non-sitting-out player after fromIdx, or -1 if none
         for i in range(fromIdx + 1, self.numPlayers):
-            if not self.players[i].sittingOut:
+            if not self.players[i].sittingOut and not self.players[i].hasBlackjack():
                 return i
         return -1
 
@@ -514,3 +504,10 @@ class BlackjackPlayer:
 
     def currentBet(self):
         return self.bets[self.activeHandIndex]
+
+    def hasBlackjack(self):
+        cards = self.hands[0].getCards()
+        if len(cards) != 2:
+            return False
+        names = {c.name for c in cards}
+        return 'Ace' in names and bool(names & {'10', 'Jack', 'Queen', 'King'})

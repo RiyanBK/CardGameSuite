@@ -272,6 +272,7 @@ class War:
         drawPixelText('VS', cx, cy * 0.71, rgb(180, 140, 60), scale=1.2)
         self.buttons['flip'].render()
         drawPixelText('[ SPACE ]', cx, cy * 1.63, rgb(120, 120, 100), scale=0.7)
+        drawPixelText('Hold [ → ] to speed through', cx, cy * 1.74, rgb(120, 120, 100), scale=0.7)
 
     # ADDED: shows the two flipped cards face-up and a colored result banner
     # (green if player won, red if opponent won)
@@ -284,6 +285,7 @@ class War:
         self._drawBanner(cx, cy * 0.72, app.width * 0.5, app.height * 0.08, color, self.resultText)
         self.buttons['next'].render()
         drawPixelText('[ SPACE ]', cx, cy * 1.63, rgb(120, 120, 100), scale=0.7)
+        drawPixelText('Hold [ → ] to speed through', cx, cy * 1.74, rgb(120, 120, 100), scale=0.7)
 
     # ADDED: shown after a tie before the war reveal flip.
     # Tied cards are displayed in the center; each player's ≤3 face-down war
@@ -306,6 +308,7 @@ class War:
                          rgb(100, 80, 20), 'TIE!  WAR NEEDED...')
         self.buttons['flip'].render()
         drawPixelText('[ SPACE ]', cx, cy * 1.63, rgb(120, 120, 100), scale=0.7)
+        drawPixelText('Hold [ → ] to speed through', cx, cy * 1.74, rgb(120, 120, 100), scale=0.7)
 
     # ADDED: war layout — face-down stacks on the outer sides, reveal cards closer
     # to center so the two reveal cards face each other across the divider.
@@ -328,6 +331,7 @@ class War:
         drawPixelText(self.resultText, cx, cy * 0.87, resultColor, scale=0.85)
         self.buttons['next'].render()
         drawPixelText('[ SPACE ]', cx, cy * 1.63, rgb(120, 120, 100), scale=0.7)
+        drawPixelText('Hold [ → ] to speed through', cx, cy * 1.74, rgb(120, 120, 100), scale=0.7)
 
     # ADDED: same card layout as _renderWar but with a gold "DOUBLE TIE!" banner
     # since no one won; the cards shown are the ones that were just returned to owners
@@ -345,6 +349,7 @@ class War:
         drawPixelText(self.resultText, cx, cy * 0.87, rgb(200, 200, 180), scale=0.85)
         self.buttons['next'].render()
         drawPixelText('[ SPACE ]', cx, cy * 1.63, rgb(120, 120, 100), scale=0.7)
+        drawPixelText('Hold [ → ] to speed through', cx, cy * 1.74, rgb(120, 120, 100), scale=0.7)
 
     # ADDED: dims the screen, draws a centered bordered box, and shows
     # a win/loss message with a PLAY AGAIN button
@@ -507,7 +512,7 @@ class War:
     # ADDED: space mirrors the visible action button (FLIP or NEXT);
     # escape returns to the main menu from anywhere in the game
     def handleKey(self, app, key):
-        if key == 'space':
+        if key == 'space' or key == 'right':
             if self.phase == 'idle':
                 self.handleFlip()
             elif self.phase == 'warSetup':   # ADDED: war reveal flip via spacebar
@@ -518,5 +523,5 @@ class War:
             app.screenMode = 'menu'
 
     def handleKeyHold(self, app, keys):
-        if 'space' in keys and self.phase != 'gameOver':
-            self.handleKey(app, 'space')
+        if 'right' in keys and self.phase != 'gameOver':
+            self.handleKey(app, 'right')
