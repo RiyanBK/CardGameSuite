@@ -20,19 +20,24 @@ class Card:
     def flip(self):
         self.faceUp = not self.faceUp
 
+    def _abbr(self):
+        return {'Jack': 'J', 'Queen': 'Q', 'King': 'K', 'Ace': 'A'}.get(self.name, self.name)
+
     def render(self, x, y):
         w, h = 60, 84
         if self.faceUp:
             drawRect(x, y, w, h, fill='white', border=rgb(60, 60, 60), borderWidth=1)
             symbols = {'Hearts': '♥', 'Diamonds': '♦', 'Spades': '♠', 'Clubs': '♣'}
-            colors = {'Hearts': rgb(200, 50, 50), 'Diamonds': rgb(200, 50, 50), 
-                    'Spades': rgb(30, 30, 30), 'Clubs': rgb(30, 30, 30)}
+            colors = {'Hearts': rgb(200, 50, 50), 'Diamonds': rgb(200, 50, 50),
+                      'Spades': rgb(30, 30, 30), 'Clubs': rgb(30, 30, 30)}
             color = colors[self.suit]
             symbol = symbols[self.suit]
-            # Rank and small suit in top-left corner
-            drawLabel(self.name, x + w/2, y + 14, size=12, bold=True, 
-                    fill=color, font='monospace')
-            # Large suit symbol centered
+            abbr = self._abbr()
+            # Top-left corner: center offset at x+10 keeps single chars (≈8px wide)
+            # and '10' (≈16px wide) both clearly inside the visible left strip
+            drawLabel(abbr,   x + 10, y + 10, size=13, bold=True, fill=color, font='monospace')
+            drawLabel(symbol, x + 10, y + 23, size=11, fill=color)
+            # Large centered suit symbol (visible when card is fully shown)
             drawLabel(symbol, x + w/2, y + h/2 + 6, size=28, fill=color, bold=True)
         else:
             drawRect(x, y, w, h, fill=rgb(180, 30, 30), border=rgb(60, 60, 60), borderWidth=1)
@@ -93,6 +98,17 @@ class Deck:
     # gets the number of cards left in the deck
     def getCardsLeft(self):
         return len(self.cards)
+
+
+class PresetDeck:
+    def __init__(self, cards):
+        self._cards = list(cards)
+    def draw(self):
+        return self._cards.pop(0)
+    def getCardsLeft(self):
+        return len(self._cards)
+    def reset(self):
+        pass
 
 
 class Hand:

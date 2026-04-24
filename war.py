@@ -1,9 +1,11 @@
 from cmu_graphics import *
-from card import Deck, Hand
+from card import Deck, Hand, Card, PresetDeck
 from button import Button
 from theme import drawTableBackground, drawPixelText
 
 # All Button spacings, colors, etc. are written by Claude
+# All graphics  written by Claude
+# All dev testing logic written by Claude
 
 class War:
     def __init__(self, app):
@@ -450,37 +452,44 @@ class War:
     #           R4 tie→war double tie (Q vs Q, then J vs J reveal).
     # After R4 both players' cards are returned, player retains enough for a win.
     def _devTest(self):
-        from card import Card
-        self.hand1.cards = [
-            Card('Ace',   'Hearts'),    # index 0  — deep buffer, drawn last
-            Card('Jack',  'Hearts'),    # index 1  — R4 war reveal (J ties J → double tie)
-            Card('8',     'Spades'),    # index 2  — R4 war fd3
-            Card('5',     'Spades'),    # index 3  — R4 war fd2
-            Card('3',     'Spades'),    # index 4  — R4 war fd1
-            Card('Queen', 'Spades'),    # index 5  — R4 tie card (Q vs Q)
-            Card('King',  'Hearts'),    # index 6  — R3 war reveal (K beats 5 → win)
-            Card('6',     'Diamonds'),  # index 7  — R3 war fd3
-            Card('4',     'Diamonds'),  # index 8  — R3 war fd2
-            Card('2',     'Diamonds'),  # index 9  — R3 war fd1
-            Card('7',     'Hearts'),    # index 10 — R3 tie card (7 vs 7)
-            Card('3',     'Clubs'),     # index 11 — R2 flip (3 loses to K)
-            Card('Ace',   'Spades'),    # index 12 — R1 flip (A beats 2) ← drawn first
-        ]
-        self.hand2.cards = [
-            Card('2',     'Hearts'),    # index 0  — deep buffer, drawn last
-            Card('Jack',  'Diamonds'),  # index 1  — R4 war reveal (J ties J → double tie)
-            Card('9',     'Hearts'),    # index 2  — R4 war fd3
-            Card('6',     'Hearts'),    # index 3  — R4 war fd2
-            Card('4',     'Hearts'),    # index 4  — R4 war fd1
-            Card('Queen', 'Hearts'),    # index 5  — R4 tie card (Q vs Q)
-            Card('5',     'Clubs'),     # index 6  — R3 war reveal (5 loses to K)
-            Card('2',     'Clubs'),     # index 7  — R3 war fd3
-            Card('10',    'Clubs'),     # index 8  — R3 war fd2
-            Card('9',     'Clubs'),     # index 9  — R3 war fd1
-            Card('7',     'Diamonds'), # index 10 — R3 tie card (7 vs 7)
-            Card('King',  'Clubs'),     # index 11 — R2 flip (K beats 3)
-            Card('2',     'Spades'),    # index 12 — R1 flip (2 loses to A) ← drawn first
-        ]
+        # Cards listed in draw order (first entry drawn first).
+        # addCardToBottom reverses them into the Hand so removeTopCard draws in sequence.
+        p1 = PresetDeck([
+            Card('Ace',   'Spades'),    # R1 flip   — A beats 2
+            Card('3',     'Clubs'),     # R2 flip   — 3 loses to K
+            Card('7',     'Hearts'),    # R3 tie card (7 vs 7)
+            Card('2',     'Diamonds'),  # R3 war fd1
+            Card('4',     'Diamonds'),  # R3 war fd2
+            Card('6',     'Diamonds'),  # R3 war fd3
+            Card('King',  'Hearts'),    # R3 war reveal — K beats 5
+            Card('Queen', 'Spades'),    # R4 tie card (Q vs Q)
+            Card('3',     'Spades'),    # R4 war fd1
+            Card('5',     'Spades'),    # R4 war fd2
+            Card('8',     'Spades'),    # R4 war fd3
+            Card('Jack',  'Hearts'),    # R4 war reveal — J ties J → double tie
+            Card('Ace',   'Hearts'),    # deep buffer
+        ])
+        p2 = PresetDeck([
+            Card('2',     'Spades'),    # R1 flip   — 2 loses to A
+            Card('King',  'Clubs'),     # R2 flip   — K beats 3
+            Card('7',     'Diamonds'),  # R3 tie card (7 vs 7)
+            Card('9',     'Clubs'),     # R3 war fd1
+            Card('10',    'Clubs'),     # R3 war fd2
+            Card('2',     'Clubs'),     # R3 war fd3
+            Card('5',     'Clubs'),     # R3 war reveal — 5 loses to K
+            Card('Queen', 'Hearts'),    # R4 tie card (Q vs Q)
+            Card('4',     'Hearts'),    # R4 war fd1
+            Card('6',     'Hearts'),    # R4 war fd2
+            Card('9',     'Hearts'),    # R4 war fd3
+            Card('Jack',  'Diamonds'),  # R4 war reveal — J ties J → double tie
+            Card('2',     'Hearts'),    # deep buffer
+        ])
+        self.hand1, self.hand2 = Hand(), Hand()
+        while p1.getCardsLeft() > 0:
+            self.hand1.addCardToBottom(p1.draw())
+        while p2.getCardsLeft() > 0:
+            self.hand2.addCardToBottom(p2.draw())
+        self.hands = [self.hand1, self.hand2]
         # reset all per-round state so the preset starts clean from 'idle'
         self.phase = 'idle'
         self.card1 = self.card2 = None

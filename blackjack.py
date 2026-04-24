@@ -4,6 +4,61 @@ from button import Button
 from card import *
 
 # All Button spacings, colors, etc. are written by Claude
+# All graphics  written by Claude
+# All dev testing logic written by Claude
+
+# Three-hand dev script: each list is the ordered sequence of button actions
+# the player should take. Consumed front-to-back by devActionIndex.
+_DEV_SCRIPTS = {
+    1: ['bet','deal','bet','deal','bet','deal','hit','hit','stand','next'],
+    2: ['bet','deal','bet','deal','bet','deal','hit','stand','split','stand','hit','stand','next'],
+    3: ['bet','deal','bet','deal','bet','deal','stand','hit','menu'],
+}
+
+def _devCards(hand):
+    # Returns the draw-order Card list for the requested dev hand.
+    # dealCards() draws: P1c1, P1c2, P2c1, P2c2, P3c1, P3c2, DealerUp, DealerDown
+    # then each hit/split card is drawn in action order.
+    if hand == 1:
+        # P1: 10+8=18 → HIT 10 → bust(28)
+        # P2: A+K → Blackjack (skipped)
+        # P3: 7+9=16 → HIT 4 → 20, STAND
+        # Dealer: 9+10=19
+        return [
+            Card('10','Hearts'),  Card('8','Spades'),   # P1 deal
+            Card('Ace','Spades'), Card('King','Hearts'), # P2 deal
+            Card('7','Hearts'),   Card('9','Spades'),    # P3 deal
+            Card('9','Diamonds'), Card('10','Spades'),   # Dealer up/down
+            Card('10','Clubs'),   # P1 hit → bust
+            Card('4','Clubs'),    # P3 hit → 20
+        ]
+    elif hand == 2:
+        # P1: A+Q → Blackjack (skipped)
+        # P2: 8+5=13 → HIT 4 → 17, STAND
+        # P3: 8+8=16 → SPLIT → hand0: 8+A=19 STAND(lose), hand1: 8+3=11 HIT 10=21 STAND(win)
+        # Dealer: K+10=20
+        return [
+            Card('Ace','Diamonds'),  Card('Queen','Hearts'),  # P1 deal
+            Card('8','Hearts'),      Card('5','Diamonds'),    # P2 deal
+            Card('8','Clubs'),       Card('8','Diamonds'),    # P3 deal
+            Card('King','Diamonds'), Card('10','Hearts'),     # Dealer up/down
+            Card('4','Spades'),   # P2 hit → 17
+            Card('Ace','Hearts'), # P3 split hand0 fill card → 8+A=19
+            Card('3','Spades'),   # P3 split hand1 fill card → 8+3=11
+            Card('10','Clubs'),   # P3 hand1 hit → 21
+        ]
+    else:  # hand == 3
+        # P1: 5+7=12, STAND (lose to dealer BJ)
+        # P2: 9+8=17 → HIT 10 → bust(27)
+        # P3: A+J → Blackjack (push vs dealer BJ)
+        # Dealer: A+K → Blackjack
+        return [
+            Card('5','Hearts'),  Card('7','Spades'),    # P1 deal
+            Card('9','Diamonds'),Card('8','Clubs'),     # P2 deal
+            Card('Ace','Clubs'), Card('Jack','Hearts'), # P3 deal
+            Card('Ace','Spades'),Card('King','Spades'), # Dealer up/down
+            Card('10','Spades'), # P2 hit → bust
+        ]
 
 class Blackjack:
     def __init__(self, app):
@@ -53,6 +108,16 @@ class Blackjack:
             Button('CLEAR', cx + 70,  app.height * 0.85, 120, 44, rgb(120, 40, 40),  rgb(160, 60, 60)),
         ]
 
+        # dev mode button — top-right, matching war's DEV button position
+        self.devButton = Button('DEV', cx * 1.8, app.height * 0.085,
+                                app.width * 0.1, app.height * 0.06,
+                                rgb(80, 50, 120), rgb(120, 80, 180))
+
+        # dev mode state
+        self.devMode = False
+        self.devHand = 0        # 1, 2, or 3 — which predetermined hand we're on
+        self.devActionIndex = 0 # index into _DEV_SCRIPTS[devHand]
+
     def render(self, app):
         drawTableBackground(app)
         cx = app.width / 2
@@ -88,6 +153,11 @@ class Blackjack:
         # MENU button always visible in every phase
         self.buttons[3].render()
 
+        if self.devMode:
+            drawPixelText(f'DEV MODE — HAND {self.devHand}/3', cx, app.height * 0.05,
+                          rgb(180, 100, 255), scale=0.75)
+            self._renderDevHighlight()
+
     def renderPlayerSelect(self, app):
         cx = app.width / 2
         drawPixelText('BLACKJACK', cx, app.height * 0.3, rgb(255, 230, 150), scale=2)
@@ -95,6 +165,7 @@ class Blackjack:
                       rgb(180, 140, 60), scale=0.8)
         for button in self.playerSelectButtons:
             button.render()
+        self.devButton.render()
 
     def getBetAmounts(self, player):
         if player.chips >= 50:
@@ -148,15 +219,30 @@ class Blackjack:
 
     def renderPlayerSeat(self, app, player, seatX, isActive):
         cardY = app.height * 0.62
-        step = 60       # pixels between card left edges
-        handGap = 20    # gap between split hands
+        handGap = 12    # gap between split hands
 
-        # compute total width needed to fit all hands side by side
+        # Actual pixel extent of a hand with N cards: (N-1)*step + CARD_W
+        # Solve for step: step = (availW - CARD_W*numHands - gaps) / (totalCards - numHands)
+        CARD_W = 60
+        availW = (app.width / max(self.numPlayers, 1)) * 0.88
+        numHands = len(player.hands)
+        totalCards = sum(max(1, len(h.getCards())) for h in player.hands)
+        gaps = handGap * (numHands - 1)
+        denominator = totalCards - numHands
+        if denominator > 0:
+            step = int((availW - CARD_W * numHands - gaps) / denominator)
+            step = max(12, min(52, step))
+        else:
+            step = 52
+
+        # True pixel width of each hand and the total group
+        def handPixelW(n):
+            return (max(1, n) - 1) * step + CARD_W
+
         if player.sittingOut:
             totalW = 100
         else:
-            totalW = sum(max(1, len(h.getCards())) * step for h in player.hands)
-            totalW += handGap * (len(player.hands) - 1)
+            totalW = sum(handPixelW(len(h.getCards())) for h in player.hands) + gaps
         seatW = max(totalW + 20, 120)
 
         borderColor = rgb(255, 215, 50) if isActive else rgb(100, 100, 80)
@@ -169,21 +255,35 @@ class Blackjack:
                       scale=0.7)
 
         if player.sittingOut:
-            drawPixelText('OUT OF CHIPS', seatX, cardY + 40, rgb(180, 80, 80), 
+            drawPixelText('OUT OF CHIPS', seatX, cardY + 40, rgb(180, 80, 80),
                           scale=0.75)
             return
 
-        # lay out each hand left to right with no overlap
-        handWidths = [max(1, len(h.getCards())) * step for h in player.hands]
-        totalHandsW = sum(handWidths) + handGap * (len(player.hands) - 1)
+        handWidths = [handPixelW(len(h.getCards())) for h in player.hands]
+        totalHandsW = sum(handWidths) + gaps
         curX = seatX - totalHandsW / 2  # left edge of first hand
+
+        handColors = [rgb(40, 30, 60), rgb(20, 50, 40)]  # purple / teal tints per hand
 
         for handIdx, hand in enumerate(player.hands):
             cards = hand.getCards()
             handW = handWidths[handIdx]
             handCenterX = curX + handW / 2
+
+            # tinted background so each hand is visually distinct
+            bgColor = handColors[handIdx % len(handColors)]
+            drawRect(curX - 4, cardY - 4, handW + 4, 92,
+                     fill=bgColor, opacity=55)
+
+            # vertical divider line between split hands
+            if handIdx > 0:
+                divX = curX - handGap / 2
+                drawRect(divX - 1, cardY - 8, 2, 100,
+                         fill=rgb(180, 140, 60), opacity=70)
+
             for i, card in enumerate(cards):
                 card.render(curX + i * step, cardY)
+
             val = self.getHandValue(hand)
             valColor = rgb(255, 80, 80) if val > 21 else rgb(255, 230, 150)
             drawPixelText(str(val), handCenterX, cardY + 97, valColor, scale=0.8)
@@ -251,16 +351,81 @@ class Blackjack:
             aces -= 1
         return value
 
+    # --- dev mode helpers ---
+
+    def _startDevMode(self):
+        self.devMode = True
+        self.devHand = 1
+        self.devActionIndex = 0
+        self.players = [BlackjackPlayer(f'Player {i + 1}') for i in range(3)]
+        self.numPlayers = 3
+        self.activePlayerIndex = 0
+        self.deck = PresetDeck(_devCards(1))
+        self.gamePhase = 'betting'
+
+    def _devSetupNextHand(self):
+        self.devHand += 1
+        self.devActionIndex = 0
+        if self.devHand <= 3:
+            self.deck = PresetDeck(_devCards(self.devHand))
+
+    def _devCurrentAction(self):
+        script = _DEV_SCRIPTS.get(self.devHand, [])
+        if self.devActionIndex < len(script):
+            return script[self.devActionIndex]
+        return None
+
+    def _devAdvance(self):
+        script = _DEV_SCRIPTS.get(self.devHand, [])
+        if self.devActionIndex < len(script):
+            self.devActionIndex += 1
+
+    def _devHighlightButton(self):
+        action = self._devCurrentAction()
+        if action == 'bet':
+            return self.betButtons[0]
+        elif action == 'deal':
+            return self.betButtons[3]
+        elif action == 'hit':
+            return self.buttons[0]
+        elif action == 'stand':
+            return self.buttons[1]
+        elif action == 'split':
+            return self.splitButton
+        elif action == 'next':
+            return self.nextRoundButton
+        elif action == 'menu':
+            return self.resultMenuButton
+        return None
+
+    def _renderDevHighlight(self):
+        btn = self._devHighlightButton()
+        if btn is None:
+            return
+        x = btn.x - btn.width / 2 - 5
+        y = btn.y - btn.height / 2 - 5
+        w = btn.width + 10
+        h = btn.height + 10
+        drawRect(x, y, w, h, fill=None, border=rgb(255, 230, 50), borderWidth=3, opacity=90)
+        drawRect(x - 2, y - 2, w + 4, h + 4, fill=None, border=rgb(255, 180, 0), borderWidth=1, opacity=50)
+
+    def _devAllows(self, action):
+        return not self.devMode or self._devCurrentAction() == action
+
+    # --- end dev mode helpers ---
+
     def handleClick(self, app, mouseX, mouseY):
-        allButtons = (self.playerSelectButtons + self.buttons + [self.splitButton]
-                      + self.betButtons + [self.nextRoundButton, self.resultMenuButton])
+        allButtons = (self.playerSelectButtons + [self.devButton] + self.buttons
+                      + [self.splitButton] + self.betButtons
+                      + [self.nextRoundButton, self.resultMenuButton])
         for button in allButtons:
             if button.isClicked(mouseX, mouseY):
                 button.pressed = True
 
     def _releaseAllButtons(self):
-        allButtons = (self.playerSelectButtons + self.buttons + [self.splitButton]
-                      + self.betButtons + [self.nextRoundButton, self.resultMenuButton])
+        allButtons = (self.playerSelectButtons + [self.devButton] + self.buttons
+                      + [self.splitButton] + self.betButtons
+                      + [self.nextRoundButton, self.resultMenuButton])
         for button in allButtons:
             button.pressed = False
 
@@ -271,6 +436,9 @@ class Blackjack:
             app.screenMode = 'menu'
             return
         if self.gamePhase == 'playerSelect':
+            if self.devButton.isClicked(mouseX, mouseY):
+                self._startDevMode()
+                return
             for i, button in enumerate(self.playerSelectButtons):
                 if button.isClicked(mouseX, mouseY):
                     self.numPlayers = i + 1
@@ -283,41 +451,51 @@ class Blackjack:
             player = self.players[self.activePlayerIndex]
             amounts = self.getBetAmounts(player)
             for i, button in enumerate(self.betButtons[:3]):
+                # in dev mode only the $10 button is allowed (index 0)
                 if button.isClicked(mouseX, mouseY) and player.chips >= amounts[i]:
-                    player.placeBet(amounts[i])
-            # CLEAR — refund the whole bet back to chips
-            if player.bets[0] > 0 and self.betButtons[4].isClicked(mouseX, mouseY):
+                    if self._devAllows('bet') and (not self.devMode or i == 0):
+                        player.placeBet(amounts[i])
+                        if self.devMode:
+                            self._devAdvance()
+            # CLEAR — disabled in dev mode
+            if (not self.devMode and player.bets[0] > 0
+                    and self.betButtons[4].isClicked(mouseX, mouseY)):
                 player.chips += player.bets[0]
                 player.bets[0] = 0
-            # DEAL — confirm bet and advance
+            # DEAL — only when script expects it
             if player.bets[0] > 0 and self.betButtons[3].isClicked(mouseX, mouseY):
-                nextIdx = self.nextActivePlayerIndex(self.activePlayerIndex)
-                if nextIdx != -1:
-                    self.activePlayerIndex = nextIdx
-                else:
-                    self.dealCards()
-                    self.activePlayerIndex = next(j for j, p in enumerate(self.players)
-                                                  if not p.sittingOut)
-                    self.skipInitialBlackjacks()
-                    self.gamePhase = 'playing'
+                if self._devAllows('deal'):
+                    if self.devMode:
+                        self._devAdvance()
+                    nextIdx = self.nextActivePlayerIndex(self.activePlayerIndex)
+                    if nextIdx != -1:
+                        self.activePlayerIndex = nextIdx
+                    else:
+                        self.dealCards()
+                        self.activePlayerIndex = next(j for j, p in enumerate(self.players)
+                                                      if not p.sittingOut)
+                        self.skipInitialBlackjacks()
+                        self.gamePhase = 'playing'
 
         elif self.gamePhase == 'playing':
             player = self.players[self.activePlayerIndex]
             hit, stand, double, _ = self.buttons
 
-            if hit.isClicked(mouseX, mouseY):
+            if hit.isClicked(mouseX, mouseY) and self._devAllows('hit'):
+                if self.devMode:
+                    self._devAdvance()
                 card = self.deck.draw()
                 card.faceUp = True
                 player.currentHand().addCard(card)
-                # bust — hand is done, move on automatically
                 if self.getHandValue(player.currentHand()) > 21:
                     self.advanceTurn()
 
-            elif stand.isClicked(mouseX, mouseY):
+            elif stand.isClicked(mouseX, mouseY) and self._devAllows('stand'):
+                if self.devMode:
+                    self._devAdvance()
                 self.advanceTurn()
 
-            elif double.isClicked(mouseX, mouseY):
-                # double only legal on the opening 2-card hand with enough chips
+            elif double.isClicked(mouseX, mouseY) and not self.devMode:
                 hand = player.currentHand()
                 bet = player.currentBet()
                 if hand.getCount() == 2 and player.chips >= bet:
@@ -326,22 +504,27 @@ class Blackjack:
                     card = self.deck.draw()
                     card.faceUp = True
                     hand.addCard(card)
-                    self.advanceTurn()  # exactly one card then forced stand
+                    self.advanceTurn()
 
-            elif self.splitButton.isClicked(mouseX, mouseY) and player.canSplit():
+            elif (self.splitButton.isClicked(mouseX, mouseY)
+                  and player.canSplit() and self._devAllows('split')):
+                if self.devMode:
+                    self._devAdvance()
                 player.split()
-                # deal one face-up card to each hand so both are playable
                 for hand in player.hands:
                     if hand.getCount() == 1:
                         card = self.deck.draw()
                         card.faceUp = True
                         hand.addCard(card)
-                # stay on hand 0 (activeHandIndex is still 0 after split)
 
         elif self.gamePhase == 'result':
-            if self.nextRoundButton.isClicked(mouseX, mouseY):
+            if self.nextRoundButton.isClicked(mouseX, mouseY) and self._devAllows('next'):
+                if self.devMode:
+                    self._devAdvance()
                 self.startNextRound()
-            elif self.resultMenuButton.isClicked(mouseX, mouseY):
+                if self.devMode:
+                    self._devSetupNextHand()
+            elif self.resultMenuButton.isClicked(mouseX, mouseY) and self._devAllows('menu'):
                 self.resetGame()
                 app.screenMode = 'menu'
 
@@ -444,8 +627,10 @@ class Blackjack:
         self.players = []
         self.numPlayers = 0
         self.activePlayerIndex = 0
-        if self.deck.getCardsLeft() < 52:
-            self.deck.reset()
+        self.devMode = False
+        self.devHand = 0
+        self.devActionIndex = 0
+        self.deck = Deck(numDecks=6)
         self.gamePhase = 'playerSelect'
 
     def dealCards(self):
