@@ -51,11 +51,16 @@ def drawTableBackground(app):
                    (fx + 6, fy + fh - 18), (fx + fw - 18, fy + fh - 18)]:
         drawPixelDiamond(dx, dy, goldDim)
 
-    # pixel dot decorations along the top rail
+    # pixel dot decorations along all four rails
     dotSpacing = 80
     dotY = oy + railW // 2
+    leftDotX  = ox + railW // 2
+    rightDotX = ox + ow - railW // 2
     for dotX in range(int(fx + dotSpacing), int(fx + fw - dotSpacing + 1), dotSpacing):
         _drawRailPixelDot(dotX, dotY, goldColor)
+    for dotY2 in range(int(fy + dotSpacing), int(fy + fh - dotSpacing + 1), dotSpacing):
+        _drawRailPixelDot(leftDotX, dotY2, goldColor)
+        _drawRailPixelDot(rightDotX, dotY2, goldColor)
 
 def _drawRailPixelDot(x, y, color):
     # 8-bit diamond shape for rail decoration
