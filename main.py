@@ -5,7 +5,7 @@ Riyan Bilimoria Kadribegovic
 ============================================================
 This string generated with the help of Claude.
 
-A retro pixel-art card game suite featuring two fully-playable games
+An 8-bit style card game suite featuring two fully-playable games
 sharing a common table/UI framework: WAR (2-player) and BLACKJACK
 (1-3 players vs. dealer).
 
@@ -46,6 +46,14 @@ BLACKJACK screen:
 ALL GAMES:
   MENU      → Return to main menu (top-left, always visible)
 ============================================================
+Grading Guidance
+1. Blackjack equal card bet splitting
+2. UX Blackjack dev mode with button highlights
+3. 6-deck shoe, auto-reshuffle below 52 cards
+4. Dynamic card spacing
+5. Blackjack bankruptcy logic
+6. War phase states
+7. Hold right arrow to speed-play War
 """
 
 from cmu_graphics import *

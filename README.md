@@ -5,7 +5,7 @@
 
 > *This README was styled with the help of Claude.*
 
-A retro pixel-art card game suite featuring two fully-playable games sharing a common table/UI framework: **War** (2-player) and **Blackjack** (1–3 players vs. dealer).
+A 8-bit style card game suite featuring two fully-playable games sharing a common table/UI framework: **War** (2-player) and **Blackjack** (1–3 players vs. dealer).
 
 **[Watch the demo video](https://youtu.be/9dlZ-a0rPwg)**
 
