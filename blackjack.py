@@ -1,5 +1,5 @@
 from cmu_graphics import *
-from theme import drawBlackjackTable, drawPixelText
+from theme import drawTableBackground, drawPixelText
 from button import Button
 from card import *
 
@@ -52,7 +52,7 @@ class Blackjack:
         ]
 
     def render(self, app):
-        drawBlackjackTable(app)
+        drawTableBackground(app)
         cx = app.width / 2
 
         # shared table chrome — always visible except on player select screen
@@ -185,9 +185,15 @@ class Blackjack:
 
     def renderGameOver(self, app):
         cx = app.width / 2
-        # render blank poker table not with blackjack text
-        drawPixelText('GAME OVER', cx, app.height * 0.38, rgb(220, 80, 80), scale=2)
-        drawPixelText('ALL PLAYERS OUT OF CHIPS', cx, app.height * 0.5,
+        cy = app.height / 2
+        # dark panel behind text so it reads clearly over the table
+        panelW, panelH = 400, 160
+        drawRect(cx - panelW / 2, cy - panelH / 2, panelW, panelH,
+                 fill=rgb(10, 5, 2), opacity=88)
+        drawRect(cx - panelW / 2, cy - panelH / 2, panelW, 2, fill=rgb(180, 140, 60))
+        drawRect(cx - panelW / 2, cy + panelH / 2 - 2, panelW, 2, fill=rgb(180, 140, 60))
+        drawPixelText('GAME OVER', cx, cy - 30, rgb(220, 80, 80), scale=2)
+        drawPixelText('ALL PLAYERS OUT OF CHIPS', cx, cy + 10,
                       rgb(180, 140, 60), scale=0.9)
         self.resultMenuButton.render()
 

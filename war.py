@@ -1,7 +1,7 @@
 from cmu_graphics import *
 from card import Deck, Hand
 from button import Button
-from theme import drawPokerTableBackground, drawPixelText
+from theme import drawTableBackground, drawPixelText
 
 class War:
     def __init__(self, app):
@@ -222,7 +222,7 @@ class War:
     # ADDED: main render dispatcher — draws the shared background, player labels,
     # and deck piles every frame, then calls the helper for the current phase
     def render(self, app):
-        drawPokerTableBackground(app)
+        drawTableBackground(app)
         cx, cy = app.width / 2, app.height / 2
 
         # CHANGED: tightened vertical layout so labels, cards, and buttons don't overlap.
