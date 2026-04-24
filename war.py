@@ -7,6 +7,8 @@ from theme import drawTableBackground, drawPixelText
 # You can safely assume I did not write anything with "draw" or "render" in it
 # All graphics  written by Claude
 # All dev testing logic written by Claude
+# I wrote all the initial logic, refined by Claude
+# Anything with "Added" or "Changed" has been modified by Claude
 
 class War:
     def __init__(self, app):
@@ -113,12 +115,11 @@ class War:
             self.warPot2 = [self.card2]
             self._setupWar()
 
-    # CHANGED: fixed bug where card (a Card object) was used as a dict key directly;
     # needs card.name to look up the string key in cardValues
     def getWarGameValue(self, card):
         return self.cardValues[card.name]
 
-    # ADDED: phase 1 of the war sequence — draws the face-down cards from each
+    # phase 1 of the war sequence — draws the face-down cards from each
     # player's hand and sets phase='warSetup' so the player can see them before
     # pressing FLIP to reveal the war card
     def _setupWar(self):
@@ -152,7 +153,7 @@ class War:
 
         self.phase = 'warSetup'
 
-    # ADDED: phase 2 of the war sequence — called when the player presses FLIP
+    # phase 2 of the war sequence — called when the player presses FLIP
     # in the warSetup phase; draws the reveal cards, compares them, and awards
     # the pot to the winner (or returns all cards on a double tie)
     def _resolveWar(self):
@@ -212,7 +213,7 @@ class War:
             self.gameWinner = 1
             self.phase = 'gameOver'
 
-    # ADDED: called when the player presses NEXT or SPACE after seeing a result.
+    # called when the player presses NEXT or SPACE after seeing a result.
     # checks for game over first (in case the last round emptied a hand),
     # then clears all per-round display state and returns to 'idle'
     def _nextRound(self):
@@ -432,7 +433,7 @@ class War:
                 self._onButton(app, key)
             btn.pressed = False
 
-    # ADDED: routes button presses to the correct action based on current phase,
+    # routes button presses to the correct action based on current phase,
     # so off-screen buttons that share a position can't fire accidentally
     def _onButton(self, app, key):
         if key == 'flip' and self.phase == 'idle':
@@ -523,7 +524,7 @@ class War:
         self.gameWinner = 0
         self.devMode = False
 
-    # ADDED: space mirrors the visible action button (FLIP or NEXT);
+    # space mirrors the visible action button (FLIP or NEXT);
     # escape returns to the main menu from anywhere in the game
     def handleKey(self, app, key):
         if key == 'space' or key == 'right':

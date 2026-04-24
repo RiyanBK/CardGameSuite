@@ -54,6 +54,13 @@ Grading Guidance
 5. Blackjack bankruptcy logic
 6. War phase states
 7. Hold right arrow to speed-play War
+============================================================
+AI USAGE NOTE:
+Most AI indicator notes will be at the top of each file 
+rather than before specific functions because a lot of the 
+same categories of items (ex. rendering) are all written by
+Claude. However, in cases where some logic was AI-written,
+notes are included above functions.
 """
 
 from cmu_graphics import *
