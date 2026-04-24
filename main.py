@@ -65,6 +65,9 @@ from rules import Rules
 from theme import *
 
 # All Button spacings, colors, etc. are written by Claude
+# You can safely assume Claude wrote anything with "draw" or "render" in it
+# Unless it's specific logic like the changing screens. I called the functions,
+# but Claude wrote them
 
 def onAppStart(app):
     app.screenMode = 'menu'

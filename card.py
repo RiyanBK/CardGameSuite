@@ -1,6 +1,9 @@
 from cmu_graphics import *
 import random
 
+# You can safely assume I did not write anything with "draw" or "render" in it
+# That was all Claude
+
 class Card:
     # initializes a card with a name, suit, and specification for face up/down
     def __init__(self, name, suit, faceUp=False):
@@ -20,9 +23,12 @@ class Card:
     def flip(self):
         self.faceUp = not self.faceUp
 
+    # abbreviations for when cards need to overlap/compress
     def _abbr(self):
         return {'Jack': 'J', 'Queen': 'Q', 'King': 'K', 'Ace': 'A'}.get(self.name, self.name)
 
+    # Claude wrote this, it basically just renders the card
+    # Again, Claude did alllllll of the graphics
     def render(self, x, y):
         w, h = 60, 84
         if self.faceUp:

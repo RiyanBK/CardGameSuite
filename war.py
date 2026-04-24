@@ -4,6 +4,7 @@ from button import Button
 from theme import drawTableBackground, drawPixelText
 
 # All Button spacings, colors, etc. are written by Claude
+# You can safely assume I did not write anything with "draw" or "render" in it
 # All graphics  written by Claude
 # All dev testing logic written by Claude
 
@@ -34,6 +35,8 @@ class War:
             'normal': Button('NORMAL', cx * 1.8, cy * 0.17, app.width * 0.1, app.height * 0.06, rgb(140, 80, 30),  rgb(190, 120, 50)),
         }
         self.devMode = False
+
+        # Claude did a lot of these notations and comments
 
         # ADDED: phase controls which screen and buttons are shown each frame:
         #   'idle'     — waiting for the player to press FLIP
@@ -72,6 +75,8 @@ class War:
     #   1. getWarGameValue received a Card object but indexed with it directly (needed card.name)
     #   2. cards were never set faceUp=True, so render() would show them face-down
     #   3. war logic called playWarSequence which had its own bugs (see _startWar below)
+
+    # The "original" mentioned here is the one that I wrote :(
     def handleFlip(self):
         # safety check in case game-over state was somehow missed
         if self.hand1.getCount() == 0 or self.hand2.getCount() == 0:

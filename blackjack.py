@@ -5,7 +5,9 @@ from card import *
 
 # All Button spacings, colors, etc. are written by Claude
 # All graphics  written by Claude
-# All dev testing logic written by Claude
+# You can safely assume I did not write anything with "draw" or "render" in it
+# All dev testing logic written by Claude, it came up with all of the
+# cards and everything, I just told it what to display
 
 # Three-hand dev script: each list is the ordered sequence of button actions
 # the player should take. Consumed front-to-back by devActionIndex.
@@ -195,6 +197,7 @@ class Blackjack:
             self.betButtons[3].render()  # DEAL
             self.betButtons[4].render()  # CLEAR
 
+    # Claude wrote this logic
     def getSeatPositions(self, app):
         cx = app.width / 2
         if self.numPlayers == 1:
@@ -422,6 +425,8 @@ class Blackjack:
             if button.isClicked(mouseX, mouseY):
                 button.pressed = True
 
+    # Claude helped with the distinction between using these underscores
+    # and wrote this function
     def _releaseAllButtons(self):
         allButtons = (self.playerSelectButtons + [self.devButton] + self.buttons
                       + [self.splitButton] + self.betButtons
@@ -429,8 +434,11 @@ class Blackjack:
         for button in allButtons:
             button.pressed = False
 
+    # Claude wrote this, especially helping with the dev mode disabling other
+    # buttons (except menu) from working so you don't misclick accidentally
     def handleRelease(self, app, mouseX, mouseY):
         self._releaseAllButtons()
+        # self.buttons[3] is the menu button
         if self.buttons[3].isClicked(mouseX, mouseY):
             self.resetGame()
             app.screenMode = 'menu'
@@ -572,6 +580,7 @@ class Blackjack:
         self.calculateResults()
         self.gamePhase = 'result'
 
+    # Claude helped map out this structure
     def calculateResults(self):
         dealerVal = self.getHandValue(self.dealerHand)
         dealerBlackjack = (self.dealerHand.getCount() == 2 and dealerVal == 21)
