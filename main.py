@@ -56,6 +56,10 @@ def onMouseRelease(app, mouseX, mouseY):
     elif app.screenMode == 'rules':
         app.rulesScreen.handleRelease(app, mouseX, mouseY)
 
+def onKeyHold(app, keys):
+    if app.screenMode == 'war':
+        app.warGame.handleKeyHold(app, keys)
+
 def onKeyPress(app, key):
     if app.screenMode == 'menu':
         if key == 'r':

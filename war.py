@@ -26,10 +26,10 @@ class War:
             'menu':  Button('MENU',       cx * 0.2, cy * 0.17, app.width * 0.125, app.height * 0.06, rgb(80, 80, 80),  rgb(120, 120, 120)),
             # CHANGED: moved again up so it stays inside the game-over box
             'again': Button('PLAY AGAIN', cx,       cy * 1.43, app.width * 0.25, app.height * 0.08, rgb(50, 130, 80),  rgb(80, 180, 110)),
-            # ADDED: dev test button in the top-right corner; sets up a preset deck
-            # that cycles through every phase so the full game flow can be tested quickly
-            'dev':   Button('DEV',        cx * 1.8, cy * 0.17, app.width * 0.1,  app.height * 0.06, rgb(80, 50, 120),  rgb(120, 80, 180)),
+            'dev':    Button('DEV',    cx * 1.8, cy * 0.17, app.width * 0.1, app.height * 0.06, rgb(80, 50, 120),  rgb(120, 80, 180)),
+            'normal': Button('NORMAL', cx * 1.8, cy * 0.17, app.width * 0.1, app.height * 0.06, rgb(140, 80, 30),  rgb(190, 120, 50)),
         }
+        self.devMode = False
 
         # ADDED: phase controls which screen and buttons are shown each frame:
         #   'idle'     — waiting for the player to press FLIP
@@ -251,9 +251,11 @@ class War:
         elif self.phase == 'gameOver':
             self._renderGameOver(app, cx, cy)
 
-        # MENU and DEV buttons are always visible regardless of phase
         self.buttons['menu'].render()
-        self.buttons['dev'].render()
+        if self.devMode:
+            self.buttons['normal'].render()
+        else:
+            self.buttons['dev'].render()
 
     # ADDED: draws the pre-flip state — ghost outlines where cards will appear,
     # a centered VS divider line, and the FLIP button
@@ -401,7 +403,11 @@ class War:
             return self.phase in ('result', 'war', 'draw')
         if key == 'again':
             return self.phase == 'gameOver'
-        return True  # 'menu' and 'dev' are always visible
+        if key == 'dev':
+            return not self.devMode
+        if key == 'normal':
+            return self.devMode
+        return True  # 'menu' always visible
 
     # ADDED: on release, fires the button action only if the mouse is still
     # over the same button that was pressed (standard click behavior);
@@ -425,8 +431,10 @@ class War:
             app.screenMode = 'menu'
         elif key == 'again' and self.phase == 'gameOver':
             app.warGame = War(app)
-        elif key == 'dev':  # ADDED: load preset deck regardless of current phase
+        elif key == 'dev':
             self._devTest()
+        elif key == 'normal':
+            self._exitDev()
 
     # ADDED: replaces both hands with a 13-card preset that walks through every phase
     # in order. Cards are listed bottom→top (last element = drawn first).
@@ -477,6 +485,22 @@ class War:
         self.roundWinner = 0
         self.resultText = ''
         self.gameWinner = 0
+        self.devMode = True
+
+    def _exitDev(self):
+        self.deck = Deck()
+        self.initializeHands()
+        self.phase = 'idle'
+        self.card1 = self.card2 = None
+        self.warCard1 = self.warCard2 = None
+        self.warFaceDown1 = []
+        self.warFaceDown2 = []
+        self.warPot1 = []
+        self.warPot2 = []
+        self.roundWinner = 0
+        self.resultText = ''
+        self.gameWinner = 0
+        self.devMode = False
 
     # ADDED: space mirrors the visible action button (FLIP or NEXT);
     # escape returns to the main menu from anywhere in the game
@@ -490,3 +514,7 @@ class War:
                 self._nextRound()
         elif key == 'escape':
             app.screenMode = 'menu'
+
+    def handleKeyHold(self, app, keys):
+        if 'space' in keys and self.phase != 'gameOver':
+            self.handleKey(app, 'space')

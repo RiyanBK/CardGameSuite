@@ -83,6 +83,9 @@ class Blackjack:
         elif self.gamePhase == 'gameOver':
             self.renderGameOver(app)
 
+        # MENU button always visible in every phase
+        self.buttons[3].render()
+
     def renderPlayerSelect(self, app):
         cx = app.width / 2
         drawPixelText('BLACKJACK', cx, app.height * 0.3, rgb(255, 230, 150), scale=2)
@@ -133,8 +136,8 @@ class Blackjack:
         seatPositions = self.getSeatPositions(app)
         for i, player in enumerate(self.players):
             self.renderPlayerSeat(app, player, seatPositions[i], i == self.activePlayerIndex)
-        # action buttons always visible during play
-        for button in self.buttons:
+        # action buttons (HIT, STAND, DOUBLE) — MENU rendered by main render()
+        for button in self.buttons[:3]:
             button.render()
         # split only appears when the active player's current hand qualifies
         if self.players[self.activePlayerIndex].canSplit():
