@@ -3,6 +3,8 @@ from card import Deck, Hand
 from button import Button
 from theme import drawTableBackground, drawPixelText
 
+# All Button spacings, colors, etc. are written by Claude
+
 class War:
     def __init__(self, app):
         # CHANGED: removed unused self.cx/cy, condensed cardValues to one line per row

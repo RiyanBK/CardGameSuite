@@ -6,6 +6,8 @@ from blackjack import *
 from rules import Rules
 from theme import *
 
+# All Button spacings, colors, etc. are written by Claude
+
 def onAppStart(app):
     app.screenMode = 'menu'
     app.width = 800
@@ -67,9 +69,6 @@ def onKeyPress(app, key):
             app.screenMode = 'rules'
     if app.screenMode == 'war':
         app.warGame.handleKey(app, key)
-
-def onStep(app):
-    pass
 
 def drawScreen(app):
     if app.screenMode == 'menu':

@@ -3,14 +3,16 @@ from theme import drawTableBackground, drawPixelText
 from button import Button
 from card import *
 
+# All Button spacings, colors, etc. are written by Claude
+
 class Blackjack:
     def __init__(self, app):
         self.deck = Deck(numDecks=6)
         self.dealerHand = Hand()
-        self.gamePhase = 'playerSelect'  # playerSelect, betting, playing, dealerTurn, result
-        self.resultMessage = ''
+        # game phases: playerSelect, betting, playing, dealerTurn, result
+        self.gamePhase = 'playerSelect'
 
-        # players and turn tracking — populated when player count is chosen
+        # players and turn tracking populated when player count is chosen
         self.players = []
         self.numPlayers = 0
         self.activePlayerIndex = 0  # whose turn it is to bet or play
@@ -105,7 +107,7 @@ class Blackjack:
     def renderBetting(self, app):
         cx = app.width / 2
         player = self.players[self.activePlayerIndex]
-        drawPixelText(f'{player.name} — PLACE YOUR BET', cx, app.height * 0.52,
+        drawPixelText(f'{player.name}, PLACE YOUR BET', cx, app.height * 0.52,
                       rgb(255, 230, 150), scale=1.2)
         drawPixelText(f'CHIPS: ${player.chips}', cx, app.height * 0.59,
                       rgb(180, 140, 60), scale=0.9)
@@ -135,7 +137,8 @@ class Blackjack:
         self.renderDealerCards(app)
         seatPositions = self.getSeatPositions(app)
         for i, player in enumerate(self.players):
-            self.renderPlayerSeat(app, player, seatPositions[i], i == self.activePlayerIndex)
+            self.renderPlayerSeat(app, player, seatPositions[i], 
+                                  i == self.activePlayerIndex)
         # action buttons (HIT, STAND, DOUBLE) — MENU rendered by main render()
         for button in self.buttons[:3]:
             button.render()
@@ -162,10 +165,12 @@ class Blackjack:
 
         nameColor = rgb(255, 230, 150) if isActive else rgb(160, 140, 90)
         drawPixelText(player.name, seatX, cardY - 22, nameColor, scale=0.8)
-        drawPixelText(f'${player.chips}', seatX, cardY - 10, rgb(140, 200, 140), scale=0.7)
+        drawPixelText(f'${player.chips}', seatX, cardY - 10, rgb(140, 200, 140),
+                      scale=0.7)
 
         if player.sittingOut:
-            drawPixelText('OUT OF CHIPS', seatX, cardY + 40, rgb(180, 80, 80), scale=0.75)
+            drawPixelText('OUT OF CHIPS', seatX, cardY + 40, rgb(180, 80, 80), 
+                          scale=0.75)
             return
 
         # lay out each hand left to right with no overlap
@@ -193,8 +198,10 @@ class Blackjack:
         panelW, panelH = 400, 160
         drawRect(cx - panelW / 2, cy - panelH / 2, panelW, panelH,
                  fill=rgb(10, 5, 2), opacity=88)
-        drawRect(cx - panelW / 2, cy - panelH / 2, panelW, 2, fill=rgb(180, 140, 60))
-        drawRect(cx - panelW / 2, cy + panelH / 2 - 2, panelW, 2, fill=rgb(180, 140, 60))
+        drawRect(cx - panelW / 2, cy - panelH / 2, panelW, 2, 
+                 fill=rgb(180, 140, 60))
+        drawRect(cx - panelW / 2, cy + panelH / 2 - 2, panelW, 2, 
+                 fill=rgb(180, 140, 60))
         drawPixelText('GAME OVER', cx, cy - 30, rgb(220, 80, 80), scale=2)
         drawPixelText('ALL PLAYERS OUT OF CHIPS', cx, cy + 10,
                       rgb(180, 140, 60), scale=0.9)
@@ -216,7 +223,8 @@ class Blackjack:
                     'LOSE':       rgb(220, 80, 80),
                     'BUST':       rgb(220, 80, 80),
                 }.get(result, rgb(255, 230, 150))
-                drawPixelText(result, handX, app.height * 0.83, labelColor, scale=0.9)
+                drawPixelText(result, handX, app.height * 0.83, labelColor, 
+                              scale=0.9)
         self.nextRoundButton.render()
         self.resultMenuButton.render()
 
@@ -446,7 +454,6 @@ class Blackjack:
         self.players = []
         self.numPlayers = 0
         self.activePlayerIndex = 0
-        self.resultMessage = ''
         if self.deck.getCardsLeft() < 52:
             self.deck.reset()
         self.gamePhase = 'playerSelect'
