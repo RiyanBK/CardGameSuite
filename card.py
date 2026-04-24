@@ -150,7 +150,3 @@ class Hand:
     
     def removeTopCard(self):
         return self.cards.pop()
-    
-    # renders the card on the screen at a given position
-    def render(self, x, y):
-        pass
